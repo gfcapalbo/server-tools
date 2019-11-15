@@ -16,8 +16,10 @@
     "data": [
         "data/ir_config_parameter.xml",
         "data/ir_cron.xml",
-        "demo/ir_cron.xml",
         "views/base_config_settings.xml",
+    ],
+    "demo": [
+        "demo/ir_cron.xml",
     ],
     "post_init_hook": "post_init_hook",
     "installable": True,
@@ -25,9 +27,8 @@
         "python": [
             "acme",
             "cryptography",
+            "dns",
             "josepy",
-            "IPy",
-            "OpenSSL",
         ],
     },
 }

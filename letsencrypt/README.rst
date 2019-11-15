@@ -34,27 +34,31 @@ the module doesn't request anything.
 Futher self-explanatory settings are in Settings -> General Settings. There you
 can add further domains to the CSR, add a custom script that updates your DNS
 and add a script that will be used to reload your web server (if needed).
-The amount of domains that can be added are subject to `rate
-limiting <https://community.letsencrypt.org/t/rate-limits-for-lets-encrypt/6769>`_.
+The number of domains that can be added to a certificate is
+`capped at 100 <https://letsencrypt.org/docs/rate-limits/>`_. A wildcard
+certificate can be used to avoid that limit.
 
 Note that all those domains must be publicly reachable on port 80 via HTTP, and
-they must have an entry for ``.well-known/acme-challenge`` pointing to your odoo
-instance.
+they must have an entry for ``.well-known/acme-challenge`` pointing to
+``$datadir/letsencrypt/acme-challenge`` of your odoo instance.
 
 Since DNS changes can take some time to propagate, when we respond to a DNS challenge
 and the server tries to check our response, it might fail (and probably will).
 The solution to this is documented in https://tools.ietf.org/html/rfc8555#section-8.2
-and basically is a `Retry-After` header under which we can instruct the server to
+and basically is a ``Retry-After`` header under which we can instruct the server to
 retry the challenge.
 At the time these lines were written, Boulder had not implemented this functionality.
-This prompted us to use `letsencrypt_backoff` configuration parameter, which is the
+This prompted us to use ``letsencrypt.backoff`` configuration parameter, which is the
 amount of minutes this module will try poll the server to retry validating the answer
-to our challenge, specifically it is the `deadline` parameter of `poll_and_finalize`.
+to our challenge, specifically it is the ``deadline`` parameter of ``poll_and_finalize``.
 
 Usage
 =====
 
 The module sets up a cronjob that requests and renews certificates automatically.
+
+Certificates are renewed a month before they expire. Renewal is then attempted
+every day until it succeeds.
 
 After the first run, you'll find a file called ``domain.crt`` in
 ``$datadir/letsencrypt``, configure your SSL proxy to use this file as certificate.
@@ -74,9 +78,9 @@ If you want to use multiple domains on your CSR then you have to configure them
 from Settings -> General Settings. If you use a wildcard in any of those domains
 then letsencrypt will return a DNS challenge. In order for that challenge to be
 answered you will need to **either** provide a script (as seen in General Settings)
-or install a module that provides support for your VPS. In that module you will
-need to create a function in the letsencrypt model with the name
-`_respond_challenge_dns_$DNS_PROVIDER` where `$DNS_PROVIDER` is the name of your
+or install a module that provides support for your DNS provider. In that module
+you will need to create a function in the letsencrypt model with the name
+``_respond_challenge_dns_$DNS_PROVIDER`` where ``$DNS_PROVIDER`` is the name of your
 provider and can be any string with length greater than zero, and add the name
 of your DNS provider in the settings dns_provider selection field.
 
@@ -143,6 +147,7 @@ Contributors
 * Dave Lasley <dave@laslabs.com>
 * Ronald Portier <ronald@therp.nl>
 * George Daramouskas <gdaramouskas@therp.nl>
+* Jan Verbeek <jverbeek@therp.nl>
 
 ACME implementation
 -------------------
