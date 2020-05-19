@@ -52,6 +52,7 @@ class TestLetsencrypt(SingleTransactionCase):
         self.assertEqual(setting_vals['letsencrypt_altnames'], '*.example.com')
         self.assertEqual(setting_vals['letsencrypt_reload_command'], 'true')
         self.assertTrue(setting_vals['letsencrypt_needs_dns_provider'])
+        self.assertFalse(setting_vals['letsencrypt_prefer_dns'])
 
     @mock.patch('acme.client.ClientV2.answer_challenge')
     @mock.patch('acme.client.ClientV2.poll_and_finalize', side_effect=_poll)
@@ -106,6 +107,19 @@ class TestLetsencrypt(SingleTransactionCase):
         ).set_dns_provider()
         with self.assertRaises(UserError):
             self.env['letsencrypt']._cron()
+
+    def test_prefer_dns_setting(self):
+        self.env['base.config.settings'].create(
+            {
+                'letsencrypt_altnames': 'example.com',
+                'letsencrypt_prefer_dns': True,
+            }
+        ).set_dns_provider()
+        self.env['ir.config_parameter'].set_param(
+            'web.base.url', 'http://example.com'
+        )
+        # pylint: disable=no-value-for-parameter
+        self.test_dns_challenge()
 
     def test_cascading(self):
         cascade = self.env['letsencrypt']._cascade_domains

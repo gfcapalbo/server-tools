@@ -238,6 +238,10 @@ class Letsencrypt(models.AbstractModel):
         # support.
         pending_responses = []
 
+        prefer_dns = (
+            self.env["ir.config_parameter"].get_param("letsencrypt.prefer_dns")
+            == "True"
+        )
         for authorizations in authzr.authorizations:
             http_challenges = [
                 challenge
@@ -249,7 +253,11 @@ class Letsencrypt(models.AbstractModel):
                 for challenge in authorizations.body.challenges
                 if challenge.chall.typ != TYPE_CHALLENGE_HTTP
             ]
-            for challenge in http_challenges + other_challenges:
+            if prefer_dns:
+                ordered_challenges = other_challenges + http_challenges
+            else:
+                ordered_challenges = http_challenges + other_challenges
+            for challenge in ordered_challenges:
                 if challenge.chall.typ == TYPE_CHALLENGE_HTTP:
                     self._respond_challenge_http(challenge, account_key)
                     client.answer_challenge(
@@ -290,8 +298,11 @@ class Letsencrypt(models.AbstractModel):
         deadline = datetime.now() + timedelta(minutes=backoff)
         try:
             order_resource = client.poll_and_finalize(authzr, deadline)
-        except acme.errors.ValidationError:
+        except acme.errors.ValidationError as error:
             _logger.error("Let's Encrypt validation failed!")
+            for authz in error.failed_authzrs:
+                for challenge in authz.body.challenges:
+                    _logger.error(str(challenge.error))
             raise
 
         with open(cert_file, 'w') as crt:

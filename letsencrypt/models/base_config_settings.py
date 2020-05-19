@@ -15,7 +15,7 @@ class BaseConfigSettings(models.TransientModel):
     _inherit = 'base.config.settings'
 
     letsencrypt_altnames = fields.Text(
-        string="Let's Encrypt altnames",
+        string="Domain names",
         default='',
         help=(
             'Additional domains to include on the CSR. '
@@ -24,7 +24,7 @@ class BaseConfigSettings(models.TransientModel):
     )
     letsencrypt_dns_provider = fields.Selection(
         selection=[('shell', 'Shell script')],
-        string='DNS Provider',
+        string='DNS provider',
         help=(
             'For wildcard certificates we need to add a TXT record on your '
             'DNS. If you set this to "Shell script" you can enter a shell '
@@ -43,7 +43,7 @@ class BaseConfigSettings(models.TransientModel):
     )
     letsencrypt_needs_dns_provider = fields.Boolean()
     letsencrypt_reload_command = fields.Text(
-        string='Server reload Command',
+        string='Server reload command',
         help='Fill this with the command to restart your web server.',
     )
     letsencrypt_testing_mode = fields.Boolean(
@@ -53,11 +53,20 @@ class BaseConfigSettings(models.TransientModel):
             "limits but doesn't create valid certificates."
         ),
     )
+    letsencrypt_prefer_dns = fields.Boolean(
+        string="Prefer DNS validation",
+        help=(
+            "Validate through DNS even when HTTP validation is possible. "
+            "Use this if your Odoo instance isn't publicly accessible.",
+        )
+    )
 
-    @api.onchange('letsencrypt_altnames')
-    def onchange_letsencrypt_altnames(self):
+    @api.onchange('letsencrypt_altnames', 'letsencrypt_prefer_dns')
+    def letsencrypt_check_dns_required(self):
         altnames = self.letsencrypt_altnames or ''
-        self.letsencrypt_needs_dns_provider = '*.' in altnames
+        self.letsencrypt_needs_dns_provider = (
+            "*." in altnames or self.letsencrypt_prefer_dns
+        )
 
     @api.model
     def default_get(self, fields_list):
@@ -80,6 +89,9 @@ class BaseConfigSettings(models.TransientModel):
                 ),
                 'letsencrypt_testing_mode': (
                     get_param('letsencrypt.testing_mode', 'False') == 'True'
+                ),
+                'letsencrypt_prefer_dns': (
+                    get_param('letsencrypt.prefer_dns', 'False') == 'True'
                 ),
             }
         )
@@ -112,5 +124,9 @@ class BaseConfigSettings(models.TransientModel):
         set_param(
             'letsencrypt.testing_mode',
             'True' if self.letsencrypt_testing_mode else 'False',
+        )
+        set_param(
+            'letsencrypt.prefer_dns',
+            'True' if self.letsencrypt_prefer_dns else 'False',
         )
         return True

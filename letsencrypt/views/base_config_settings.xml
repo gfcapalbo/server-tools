@@ -24,6 +24,7 @@
                         <field name="letsencrypt_altnames" />
                         <field name="letsencrypt_reload_command" />
                         <field name="letsencrypt_testing_mode" />
+                        <field name="letsencrypt_prefer_dns" />
                     </group>
                 </group>
             </xpath>
