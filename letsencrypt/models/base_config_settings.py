@@ -100,7 +100,7 @@ class BaseConfigSettings(models.TransientModel):
     @api.multi
     def set_dns_provider(self):
         self.ensure_one()
-        self.onchange_letsencrypt_altnames()
+        self.letsencrypt_check_dns_required()
 
         if self.letsencrypt_dns_provider == 'shell':
             lines = [
