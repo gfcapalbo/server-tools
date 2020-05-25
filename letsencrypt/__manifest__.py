@@ -2,7 +2,7 @@
 # © 2016 Therp BV <http://therp.nl>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 {
-    "name": "Let's encrypt",
+    "name": "Let's Encrypt",
     "version": "10.0.2.0.0",
     "author": "Therp BV,"
               "Tecnativa,"
