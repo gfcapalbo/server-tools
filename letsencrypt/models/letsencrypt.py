@@ -284,10 +284,12 @@ class Letsencrypt(models.AbstractModel):
         if pending_responses:
             for update in pending_responses:
                 self._wait_for_record(update.domain, update.token)
+            # 1 minute was not always enough during testing, even once records
+            # were visible locally
             _logger.info(
-                "All TXT records found, waiting 60 seconds to make sure."
+                "All TXT records found, waiting 5 minutes more to make sure."
             )
-            time.sleep(60)
+            time.sleep(300)
             for update in pending_responses:
                 client.answer_challenge(
                     update.challenge, acme.challenges.DNSResponse()
