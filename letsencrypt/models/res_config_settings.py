@@ -82,7 +82,6 @@ class ResConfigSettings(models.TransientModel):
         )
         return res
 
-    @api.multi
     def set_values(self):
         super().set_values()
 
