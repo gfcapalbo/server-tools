@@ -57,8 +57,8 @@ class BaseConfigSettings(models.TransientModel):
         string="Prefer DNS validation",
         help=(
             "Validate through DNS even when HTTP validation is possible. "
-            "Use this if your Odoo instance isn't publicly accessible.",
-        )
+            "Use this if your Odoo instance isn't publicly accessible."
+        ),
     )
 
     @api.onchange('letsencrypt_altnames', 'letsencrypt_prefer_dns')
