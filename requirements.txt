@@ -13,3 +13,7 @@ python-stdnum
 pyopenssl
 odoorpc
 openupgradelib
+acme
+cryptography
+dnspython
+josepy
